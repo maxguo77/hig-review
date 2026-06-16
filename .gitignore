@@ -1,0 +1,37 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.mypy_cache/
+.pytest_cache/
+
+# Claude Code local-only state (keep the skill under .claude/skills tracked)
+.claude/settings.local.json
+
+# Local-only workspace tool — manages the maintainer's dev/ + clean/ publish split.
+# Not part of the distributed project (a clone is a flat repo with no clean/ sibling).
+/tools/export-clean.sh
+
+# External reference project — cloned open-source MCP, has its own git history,
+# not required at runtime. Remove this line if you want to vendor it into this repo.
+/appledeepdoc-mcp/
+
+# Generated HIG baseline — built locally by scripts/build_rules.py, NOT redistributed
+# (derived from Apple's HIG; see README "Source & attribution"). rules/README.md is kept.
+.claude/skills/hig-review/rules/pages/
+.claude/skills/hig-review/rules/index.json
+.claude/skills/hig-review/rules/manifest.json
+.claude/skills/hig-review/VERSION
+plugins/hig-review/skills/hig-review/rules/pages/
+plugins/hig-review/skills/hig-review/rules/index.json
+plugins/hig-review/skills/hig-review/rules/manifest.json
+plugins/hig-review/skills/hig-review/VERSION
+
+# Runtime opt-out marker for the first-run baseline nudge (created by the user)
+.claude/skills/hig-review/rules/.hig-skip-setup-notice
+plugins/hig-review/skills/hig-review/rules/.hig-skip-setup-notice

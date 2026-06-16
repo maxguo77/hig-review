@@ -1,0 +1,18 @@
+# Optional Agent-Skills / Codex metadata (UI display + default prompt).
+# The skill is fully usable WITHOUT this file — it triggers from SKILL.md
+# frontmatter (name + description) on any compatible agent.
+interface:
+  display_name: "HIG Review"
+  short_description: >-
+    Review a design/code project against Apple's Human Interface Guidelines —
+    reports each issue with location, reason, impact, fix, and the guideline
+    it's based on. Covers iPhone/iPad/Mac/Watch/TV/Vision Pro plus a general
+    mode for web & data dashboards.
+  brand_color: "#0A84FF"
+  default_prompt: >-
+    审查 HIG / HIG review — check this project against Apple's Human Interface
+    Guidelines.
+
+policy:
+  # Let the agent invoke the skill implicitly when the description matches.
+  allow_implicit_invocation: true

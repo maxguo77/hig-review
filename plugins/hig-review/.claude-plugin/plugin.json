@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "hig-review",
+  "version": "0.1.0",
+  "description": "Review a project against Apple's Human Interface Guidelines like a code review — code, UI images, UX flows, docs, and Figma designs for iPhone/iPad/Mac/Apple Watch/Apple TV/Vision Pro apps, plus a general mode for web pages and data dashboards. Each finding includes location, reason, impact, fix, and the guideline it's based on.",
+  "author": {
+    "name": "Shuai Guo",
+    "email": "guoshuai778899@gmail.com"
+  },
+  "homepage": "https://github.com/maxguo77/hig-review#readme",
+  "repository": "https://github.com/maxguo77/hig-review",
+  "keywords": [
+    "apple",
+    "hig",
+    "human-interface-guidelines",
+    "design-review",
+    "accessibility",
+    "ui",
+    "ux"
+  ]
+}

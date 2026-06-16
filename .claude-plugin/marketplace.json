@@ -1,0 +1,15 @@
+{
+  "name": "apple-hig",
+  "description": "Tools for reviewing products against Apple's Human Interface Guidelines.",
+  "owner": {
+    "name": "Shuai Guo",
+    "email": "guoshuai778899@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "hig-review",
+      "source": "./plugins/hig-review",
+      "description": "Review a project against Apple's Human Interface Guidelines — reports each issue with its location, reason, impact, a fix, and the guideline it's based on."
+    }
+  ]
+}

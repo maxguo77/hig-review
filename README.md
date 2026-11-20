@@ -201,5 +201,45 @@ built `rules/` are for your own use — don't redistribute the extracted text.
 [MIT](LICENSE) for the tooling in this repo. Apple HIG content is © Apple Inc. and
 is **not** included here — see [Source & attribution](#source--attribution).
 
+## Changelog
+
+### 0.2.0 — 2026-11-20
+Aligned with Apple's HIG as of November 2026.
+
+**HIG coverage**
+- **iPhone Duo** (HIG, Sept 2026): new review target — toolbars and tab bars on
+  the side, reserved regions (camera, fold), size-class-driven layouts,
+  consistent functions across displays and poses; iPhone Duo screenshot sizes.
+- **Mac touch input** (HIG, Oct 2026): larger tap targets without resizing
+  controls, a touch path for hover-only controls, touch never the only path.
+- **Design principles** (reintroduced June 2026): general mode for web pages and
+  dashboards now uses the eight principles — Purpose, Agency, Responsibility,
+  Familiarity, Flexibility, Simplicity, Craft, Delight.
+- **Per-platform minimums**: control size, text size and contrast are judged
+  with each platform's numbers from the Accessibility page, not 44 pt everywhere.
+- **Updated checks**: tab bars (no overflow tab; placement depends on device),
+  sheet button placement, Liquid Glass and the scroll edge effect.
+
+**Baseline & tools**
+- Citations use Apple's **official Simplified Chinese HIG** titles and links;
+  `hig_fetch.py --lang zh-CN`, `build_rules.py --no-zh`.
+- The baseline now captures **tables and platform tabs** (sizes, type ramps,
+  specs) that were previously dropped.
+- Build time cut from ~15–20 min to **~5 min** (section anchors are no longer
+  fetched as pages).
+- `--upgrade` lists Apple's dated change-log entries since your last build.
+- `visual_checks.py`: iPhone 17 / Air / 18, iPhone Duo, new iPad and Apple Watch
+  sizes; closest-size matching.
+- `detect_inputs.py`: maps iPhone Duo, Liquid Glass and scroll-edge APIs.
+
+**Upgrading from 0.1.0:** run `/hig-review:baseline-upgrade`. Because the parser
+changed, nearly every page shows as "~ changed" once — that's a format-only
+diff; the dated change-log list shows Apple's real content changes.
+
+### 0.1.0 — 2026-06-16
+Initial release: Agent Skill + Claude Code plugin, offline baseline and live
+mode, code / UI image / UX doc / Figma review, general mode for web pages and
+dashboards.
+
 ## Roadmap
 - Pencil `.pen` design-source review; optional JSON report sidecar for CI.

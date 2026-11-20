@@ -125,7 +125,8 @@ python3 scripts/build_rules.py
 │   ├── ui-image-review.md, ux-doc-review.md, figma-review.md,
 │   └── general-review-mode.md, output-format.md
 ├── rules/               HIG 基线 —— 由 build_rules.py 本地构建，不随仓库提交
-│   ├── index.json       （生成）rule set -> {title, url, platforms, file, category}
+│   ├── index.json       （生成）rule set -> {title, url, platforms, file, category,
+│   │                    title_zh, url_zh, hig_updated}
 │   ├── manifest.json    （生成）基线版本 + 各页内容哈希
 │   └── pages/<slug>.md  （生成）每个 HIG 页一个文件；稳定 id（HIG-<SLUG>-NNN）
 ├── scripts/
@@ -162,7 +163,8 @@ python3 scripts/visual_checks.py contrast "#767676" "#FFFFFF"
 
 ## 来源与署名
 本仓库只发**生成器**（`scripts/`），**不**包含 Apple 的 HIG 原文。`rules/` 下的规则语料
-由 `build_rules.py` 在**你的机器上**从 Apple 的**人机界面指南**（developer.apple.com）抓取。
+由 `build_rules.py` 在**你的机器上**从 Apple 的**人机界面指南**（developer.apple.com）抓取，
+并同时获取 Apple 官方简体中文版的页面标题与链接。
 Apple HIG 内容版权归 Apple Inc. 所有；本项目与 Apple 无隶属或背书关系。本地构建的 `rules/`
 仅供你自己使用——请勿再分发抽取出的文本。
 

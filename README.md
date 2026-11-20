@@ -152,7 +152,8 @@ You rarely need to run this by hand:
 │   ├── ui-image-review.md, ux-doc-review.md, figma-review.md,
 │   └── general-review-mode.md, output-format.md
 ├── rules/               HIG baseline — built locally by build_rules.py, NOT committed
-│   ├── index.json       (generated) rule set -> {title, url, platforms, file, category}
+│   ├── index.json       (generated) rule set -> {title, url, platforms, file, category,
+│   │                    title_zh, url_zh, hig_updated}
 │   ├── manifest.json    (generated) baseline version + per-page content hashes
 │   └── pages/<slug>.md  (generated) one HIG page per file; stable ids (HIG-<SLUG>-NNN)
 ├── scripts/
@@ -191,7 +192,8 @@ All MCP use is optional — the skill works without any MCP.
 ## Source & attribution
 This repo ships **only the generator** (`scripts/`), **not** Apple's HIG text. The
 rule corpus under `rules/` is fetched on your machine by `build_rules.py` from
-Apple's **Human Interface Guidelines** (developer.apple.com). Apple HIG content is
+Apple's **Human Interface Guidelines** (developer.apple.com), plus the official
+Simplified Chinese titles/links from Apple's zh-CN edition. Apple HIG content is
 © Apple Inc.; this project isn't affiliated with or endorsed by Apple. The locally
 built `rules/` are for your own use — don't redistribute the extracted text.
 

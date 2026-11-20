@@ -6,8 +6,8 @@ interface:
   short_description: >-
     Review a design/code project against Apple's Human Interface Guidelines —
     reports each issue with location, reason, impact, fix, and the guideline
-    it's based on. Covers iPhone/iPad/Mac/Watch/TV/Vision Pro plus a general
-    mode for web & data dashboards.
+    it's based on. Covers iPhone (incl. iPhone Duo)/iPad/Mac/Watch/TV/Vision Pro
+    plus a general mode for web & data dashboards.
   brand_color: "#0A84FF"
   default_prompt: >-
     审查 HIG / HIG review — check this project against Apple's Human Interface

@@ -11,6 +11,7 @@ Usage:
     python hig_fetch.py foundations/layout
     python hig_fetch.py https://developer.apple.com/design/human-interface-guidelines/typography
     python hig_fetch.py --json color          # machine-readable output
+    python hig_fetch.py --lang zh-CN buttons  # Apple's official Chinese text
 
 Stdlib only.
 """
@@ -27,8 +28,11 @@ import hig_lib as hig
 def render_text(page: dict) -> str:
     out = [f"# {page['title']}  (ONLINE)",
            f"source: {page['url']}",
-           f"platforms: {', '.join(page['platforms'])}",
-           ""]
+           f"platforms: {', '.join(page['platforms'])}"]
+    change = hig.latest_change(page)
+    if change:
+        out.append(f"last updated by Apple: {change['date']} — {change['change']}")
+    out.append("")
     if page["abstract"]:
         out.append(page["abstract"] + "\n")
     for sec in page["sections"]:
@@ -49,16 +53,19 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="Fetch current guidance for one HIG page.")
     ap.add_argument("page", help="HIG page slug, path, or full URL (e.g. 'buttons')")
     ap.add_argument("--json", action="store_true", help="emit normalized JSON")
+    ap.add_argument("--lang", default="en", choices=sorted(hig.LANG_SEGMENTS),
+                    help="language edition of the HIG (default en; zh-CN = Apple's "
+                         "official Chinese translation)")
     args = ap.parse_args()
 
     path = hig.normalize_path(args.page)
-    data = hig.fetch_page_json(path)
+    data = hig.fetch_page_json(path, lang=args.lang)
     if data is None:
-        print(f"ERROR: could not fetch HIG page '{args.page}' ({hig.web_url(path)}). "
+        print(f"ERROR: could not fetch HIG page '{args.page}' ({hig.web_url(path, args.lang)}). "
               f"Check the slug or your network connection.", file=sys.stderr)
         return 1
 
-    page = hig.extract_page(data, path)
+    page = hig.extract_page(data, path, lang=args.lang)
     if args.json:
         print(json.dumps(page, ensure_ascii=False, indent=2))
     else:

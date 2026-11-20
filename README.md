@@ -6,9 +6,10 @@ HIG Review runs a systematic quality review of your design against Apple's Human
 Interface Guidelines (HIG).
 
 Inputs can be code, UI screenshots, interactive prototypes, UX spec docs, user-flow
-diagrams, or design files (a Figma link, a Pencil `.pen`). Coverage spans iPhone,
-iPad, Mac, Apple Watch, Apple TV, and Vision Pro — plus a general mode for web pages
-and data dashboards.
+diagrams, or design files (a Figma link, a Pencil `.pen`). Coverage spans iPhone
+(including iPhone Duo), iPad, Mac (including Macs with a touch display), Apple
+Watch, Apple TV, and Vision Pro — plus a general mode for web pages and data
+dashboards.
 
 Every finding has five parts: **location · problem · impact · suggested fix · the
 guideline it's based on (with a link)** — so every change is justified.
@@ -21,9 +22,13 @@ are provided.
 - **Inputs:** source code · UI images / screenshots / mockups · UX docs, specs &
   flows · design files (paste a **Figma** link, or a Pencil **`.pen`**) · or a
   whole **project folder** (auto-inventoried by `detect_inputs.py`).
-- **Apple platforms:** iPhone · iPad · Mac · Apple Watch · Apple TV · Vision Pro.
+- **Apple platforms:** iPhone (incl. dual-display iPhone Duo) · iPad · Mac (incl.
+  touch-display Macs) · Apple Watch · Apple TV · Vision Pro. Sizes, text sizes and
+  contrast are judged with each platform's own HIG numbers, not 44 pt everywhere.
 - **General mode** for **web pages & data dashboards** — applies the HIG's
-  cross-platform design principles as a quality lens, and uses **WCAG** for the
+  design principles (the eight reintroduced in 2026: Purpose, Agency,
+  Responsibility, Familiarity, Flexibility, Simplicity, Craft, Delight) as a
+  quality lens, and uses **WCAG** for the
   web-specific checks (contrast, target size, keyboard, focus). These read as
   design guidance, not platform rules.
 
@@ -49,7 +54,8 @@ CI when you ask for it.
 ## Key features
 - **Grounded in the real HIG.** Cite from a **locally-built offline baseline** or
   fetch the **latest rules live** — every finding maps to an actual guideline, no
-  invented rules.
+  invented rules. Chinese reports cite Apple's **official Simplified Chinese HIG**
+  titles and links.
 - **Real-pixel visual checks.** Contrast ratios and sizes come from
   `visual_checks.py`, not from eyeballing a mockup.
 - **Cross-platform & cross-agent.** Six Apple platforms plus a web/dashboard mode;
@@ -100,7 +106,7 @@ The plugin ships four slash commands, namespaced under the plugin name:
 |---------|--------------|
 | `/hig-review:review [target]` | Run a full review (code / UI images / UX docs / designs); optionally pass a path, file, or link |
 | `/hig-review:review-notes <notes>` | Same, but folds your manual focus / extra rules in as a high-priority emphasis |
-| `/hig-review:baseline-init` | Build the local HIG baseline for the first time (`build_rules.py`, online, ~15–20 min) |
+| `/hig-review:baseline-init` | Build the local HIG baseline for the first time (`build_rules.py`, online, ~5 min) |
 | `/hig-review:baseline-upgrade` | Re-crawl and diff (`build_rules.py --upgrade`); report +added/~changed/−removed and bump `VERSION` |
 
 The baseline commands are thin wrappers around the scripts in
@@ -120,7 +126,7 @@ auto-triggers from a request — these commands are just explicit entry points. 
 ## First-time setup: build the baseline
 The rule corpus isn't committed (it's derived from Apple's HIG — see
 [Source & attribution](#source--attribution)). Build it once into your local copy
-(from the skill directory, needs network, ~15–20 min):
+(from the skill directory, needs network, ~5 min):
 ```bash
 cd .claude/skills/hig-review        # or the plugin's skills/hig-review/ once installed
 python3 scripts/build_rules.py
@@ -135,7 +141,7 @@ You rarely need to run this by hand:
   the baseline exists). Only-using-live-rules? Create an empty
   `skills/hig-review/rules/.hig-skip-setup-notice` to mute it.
 - **Run as a skill / mid-review**, the assistant offers to build when it sees
-  `rules/` is empty (the first-run sync notice, ~15–20 min).
+  `rules/` is empty (the first-run sync notice, ~5 min).
 
 ## What's inside `.claude/skills/hig-review/`
 ```
@@ -162,6 +168,7 @@ python3 scripts/build_rules.py            # build / regenerate the whole baselin
 python3 scripts/build_rules.py --upgrade  # re-crawl, diff, report +added/~changed/-removed
 python3 scripts/build_rules.py --reindex  # rebuild index/manifest from files (no network)
 python3 scripts/build_rules.py --limit 10 # smoke test (does not touch the canonical baseline)
+python3 scripts/build_rules.py --no-zh    # skip Apple's zh-CN titles/links (fewer requests)
 ```
 The baseline is built by crawling Apple's DocC JSON endpoints
 (`…/tutorials/data/design/human-interface-guidelines/{path}.json`) via
@@ -170,6 +177,7 @@ The baseline is built by crawling Apple's DocC JSON endpoints
 ### Live fetch & image helpers
 ```bash
 python3 scripts/hig_fetch.py buttons              # latest guidance for one page
+python3 scripts/hig_fetch.py --lang zh-CN buttons # Apple's official Chinese edition
 python3 scripts/visual_checks.py dims shot.png --platform macos --scale 2
 python3 scripts/visual_checks.py sample shot.png 0.3 0.4 0.5 0.4 --norm --contrast
 python3 scripts/visual_checks.py contrast "#767676" "#FFFFFF"

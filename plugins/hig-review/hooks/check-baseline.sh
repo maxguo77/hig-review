@@ -23,6 +23,6 @@ RULES="$BASE/skills/hig-review/rules"
 # relays this to the user at a suitable moment.
 cat <<'EOF'
 [hig-review] 本地 HIG 规范基线尚未构建（rules/index.json 不存在）。请在本次会话里，用一句话主动提示用户：
-「HIG Review 已就绪，但首次「离线审查」前需联网同步一次 Apple HIG 规范基线（约 15–20 分钟，视网络情况），之后审查全程离线、更快。现在可运行 /hig-review:baseline-init 建库；或在审查时改用「联网获取最新规范」零等待开始。」
+「HIG Review 已就绪，但首次「离线审查」前需联网同步一次 Apple HIG 规范基线（约 5 分钟，视网络情况），之后审查全程离线、更快。现在可运行 /hig-review:baseline-init 建库；或在审查时改用「联网获取最新规范」零等待开始。」
 若用户只打算用联网模式、不想再看到此提示，可创建空文件 rules/.hig-skip-setup-notice 关闭它。
 EOF

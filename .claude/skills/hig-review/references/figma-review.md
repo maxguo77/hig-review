@@ -71,25 +71,34 @@ Open the matching `rules/pages/<slug>.md` for each concern. The geometry/tokens
 are exact, so:
 
 - **Target size** — read the node's bounding box. Interactive nodes (buttons,
-  tappable rows, icon-only buttons) must be **≥ 44×44 pt** (visionOS ≥ 60 pt;
-  web: WCAG 24px AA / 44px AAA). Figma mobile artboards are normally authored at
+  tappable rows, icon-only buttons) are judged against the **target platform's**
+  default/minimum control size from `platforms.md` (iOS/iPadOS/watchOS 44/28 pt,
+  macOS 28/20 pt, tvOS 66/56 pt, visionOS 60/28 pt; web: WCAG 24px AA / 44px
+  AAA). Figma mobile artboards are normally authored at
   **1× (1px ≈ 1pt)** — **state that assumption**; if the frame is a 2× artboard,
   divide. When geometry is known, give a definitive pass/fail (no "verify").
-  Rule sets: `HIG-BUTTONS`, `HIG-GESTURES`.
+  Rule sets: `HIG-BUTTONS`, `HIG-ACCESSIBILITY`.
 - **Contrast** — take the text fill token and its background token (exact hex)
   and run `python3 scripts/visual_checks.py contrast <c1> <c2>` for a definitive
   ratio (add `--large` for ≥ large text). Only fall back to sampling the render
   (`visual_checks.py sample … --contrast`) when a layer's color can't be resolved
-  to a token. Rule sets: `HIG-COLOR`, `HIG-ACCESSIBILITY`.
+  to a token. Minimums: 4.5:1 for text ≤ 17 pt, 3:1 for ≥ 18 pt or bold. Rule
+  sets: `HIG-COLOR`, `HIG-ACCESSIBILITY`.
 - **Color & typography** — are color tokens semantic (not one-off hex)? Are there
   light/dark variants? Is the type ramp consistent and legible (not too many
   sizes/weights)? Rule sets: `HIG-COLOR`, `HIG-DARK-MODE`, `HIG-TYPOGRAPHY`.
 - **Layout / spacing / safe areas** — from geometry: grid alignment, consistent
   gutters, balanced whitespace, content clear of status bar / Dynamic Island /
-  home indicator. Rule sets: `HIG-LAYOUT`, `HIG-STATUS-BARS`.
-- **Components / navigation / modality** — from structure + render: ≤5 top-level
-  tabs and one selected; clear nav title + back affordance; sheets/alerts used
-  appropriately. Reuse the per-rule-set table in **`ui-image-review.md` §3** —
+  home indicator; ~12 pt padding around bezeled controls, ~24 pt around
+  unbezeled ones. Check that frames exist for the sizes the app must adapt to
+  (compact + regular width; iPhone Duo outer 466×678 pt / inner 669×951 pt
+  frames and their reserved regions if the app targets it). Rule sets:
+  `HIG-LAYOUT`, `HIG-STATUS-BARS`, `HIG-DESIGNING-FOR-IPHONE-DUO`.
+- **Components / navigation / modality** — from structure + render: tab bar
+  used for navigation with no overflow tab, one selected, placed where the
+  target device puts it; clear nav title + back affordance; sheets show Cancel
+  on the leading edge and Done on the trailing edge (never Done alone);
+  alerts used appropriately. Reuse the per-rule-set table in **`ui-image-review.md` §3** —
   don't duplicate it here.
 
 ## Step 4 — Locate each finding

@@ -3,8 +3,9 @@ name: hig-review
 description: >-
   Review a project against Apple's Human Interface Guidelines (HIG) like a code
   review — checks code, UI mockups/screenshots, UX flows, docs, and design
-  source files for iPhone / iPad / Mac / Apple Watch / Apple TV / Vision Pro
-  apps, plus a general review mode for web pages and data dashboards (数据大屏).
+  source files for iPhone (incl. iPhone Duo) / iPad / Mac / Apple Watch /
+  Apple TV / Vision Pro apps, plus a general review mode for web pages and data
+  dashboards (数据大屏).
   Reports each issue with its exact location, the reason, the impact, a fix, and
   the guideline it is based on. Use when the user asks to "审查 HIG / HIG review /
   检查是否符合苹果设计规范 / Human Interface Guidelines check / HIG code review".
@@ -23,13 +24,13 @@ versioned in `VERSION`.
 This skill ships the **generator**, not Apple's HIG text. **If `rules/index.json`
 is missing, the baseline hasn't been built yet** — run `python3
 scripts/build_rules.py` once (crawls Apple's HIG into `rules/`; needs network,
-~15–20 min). After that, reviews run offline. (Live mode via `hig_fetch.py` needs no
+~5 min). After that, reviews run offline. (Live mode via `hig_fetch.py` needs no
 prebuilt baseline.) Offer to run the build when you detect `rules/` is empty.
 
 When the user picks **offline / 本地规范** but the baseline isn't built yet, show
 this exact, user-facing notice before building (don't just fail or silently
 build) — then act on their choice:
-> 首次使用「离线审查」需先把 Apple HIG 同步到本地基线库（联网抓取一次，约 15–20
+> 首次使用「离线审查」需先把 Apple HIG 同步到本地基线库（联网抓取一次，约 5
 > 分钟，视网络情况）；完成后审查全程离线、更快。现在开始同步，还是改用「联网获取
 > 最新规范」？
 
@@ -37,7 +38,10 @@ If they sync, run `python3 scripts/build_rules.py` and report the new `VERSION`;
 if they'd rather not wait, fall back to live mode.
 
 ## Assets
-- `rules/index.json` — (generated) map of rule set → `{title, url, platforms, file, category}`.
+- `rules/index.json` — (generated) map of rule set → `{title, url, platforms, file,
+  category, title_zh, url_zh, hig_updated}`. `title_zh`/`url_zh` are Apple's
+  official Simplified Chinese HIG title and link (cite these in reports);
+  `hig_updated` is the date of the page's latest Apple change-log entry.
 - `rules/pages/<slug>.md` — (generated) one file per HIG page; each guideline has a
   stable id (e.g. `HIG-BUTTONS-003`) and a source URL. The id is for internal
   traceability only — in the report, present the guideline by **name + link**, not by id.
@@ -45,7 +49,7 @@ if they'd rather not wait, fall back to live mode.
 - `scripts/` — `detect_inputs.py`, `hig_fetch.py` (live fetch), `build_rules.py`
   (build/update the baseline), `hig_lib.py` (shared fetch/parse),
   `visual_checks.py` (`dims` size/device, `sample` real PNG pixel colors,
-  `contrast` WCAG ratio).
+  `contrast` ratio vs the HIG/WCAG AA minimums).
 - `references/` — load as needed: `workflow.md`, `platforms.md`, `input-types.md`,
   `ui-image-review.md`, `ux-doc-review.md`, `figma-review.md`,
   `general-review-mode.md`, `output-format.md`.
@@ -64,7 +68,8 @@ if they'd rather not wait, fall back to live mode.
 Ask the user (the AskUserQuestion tool in Claude Code, or your agent's
 equivalent) with **plain, user-facing wording** (no internal jargon like
 "offline/online/corpus"). Confirm:
-1. **Which product is this for?** — iPhone app / iPad app / Mac app /
+1. **Which product is this for?** — iPhone app (say if it also targets
+   **iPhone Duo**) / iPad app / Mac app (incl. Macs with a touch display) /
    Apple Watch · TV · Vision Pro app / **web page · data dashboard (数据大屏)**.
    (Web/dashboard → general review mode, see `references/general-review-mode.md`.)
 2. **What are you giving me?** — code / UI images / UX docs / design files
@@ -74,7 +79,7 @@ equivalent) with **plain, user-facing wording** (no internal jargon like
 3. **Which rules should I check against?** — "本地规范(更快)" (the locally-built
    baseline) or "联网获取最新规范(稍慢)" (fetch the latest live). If they pick 本地
    but the baseline isn't built yet, show the first-run sync notice (see First-run
-   setup) — the one estimating ~15–20 min — then build or fall back to live.
+   setup) — the one estimating ~5 min — then build or fall back to live.
 
 You may infer obvious answers and state them; still confirm the product type and
 the rule source, since those change the result most.
@@ -100,7 +105,11 @@ specs follow `references/ux-doc-review.md`.
 - **Bundled baseline (default)**: use only the local `rules/`.
 - **Latest live rules**: additionally run `python3 scripts/hig_fetch.py <slug>` and
   **read the full fetched body** — base citations on that text; if it matches the
-  bundled baseline, note "与内置规范一致". For **web · 数据大屏**, the latest Apple HIG
+  bundled baseline, note "与内置规范一致". `--lang zh-CN` returns Apple's
+  official Chinese edition of the same page.
+- **Stale baseline?** If `VERSION` is more than ~3 months old, say so and offer
+  `build_rules.py --upgrade` or live mode — Apple updates the HIG several times
+  a year (e.g. iPhone Duo and Mac touch input arrived in Sept–Oct 2026). For **web · 数据大屏**, the latest Apple HIG
   rarely changes the general principles — the bundled baseline is usually enough.
 - **Web · 数据大屏**: use `references/general-review-mode.md`.
 
@@ -115,13 +124,14 @@ real data (`visual_checks.py sample` / a known scale), not eyeballing.
 Produce the report exactly as specified in `references/output-format.md`: the
 title 「HIG 滚动基线审查报告」, a summary table, then findings — each with
 severity (bilingual), location, the problem, its impact, a concrete fix, and the
-guideline it's based on (name + link). Offer the machine-readable JSON sidecar
+guideline it's based on (Apple's official Chinese title + English title + link). Offer the machine-readable JSON sidecar
 when the user wants CI integration.
 
 ## Maintaining the baseline
 - **Build / regenerate**: `python3 scripts/build_rules.py`
 - **Update & diff**: `python3 scripts/build_rules.py --upgrade` — re-crawls,
-  reports added/changed/removed pages, bumps `VERSION`.
+  reports added/changed/removed pages plus Apple's dated change-log entries
+  since the last build, bumps `VERSION`.
 - **Rebuild index only (no network)**: `python3 scripts/build_rules.py --reindex`.
 
 ## Scope notes
@@ -129,8 +139,11 @@ when the user wants CI integration.
   review mode applies HIG's cross-platform design principles as a quality lens,
   and uses WCAG as the standard for web specifics (contrast, target size,
   keyboard). Phrase such findings as design guidance, not platform rules.
-- This is a Skill; it can later move into a plugin
-  (`plugins/hig-review/skills/hig-review/`) unchanged.
+- Measurements use each platform's own numbers (control sizes, text sizes,
+  contrast) from `references/platforms.md`, not the iPhone 44 pt everywhere.
+- The same skill ships standalone and inside the Claude Code plugin
+  (`plugins/hig-review/skills/hig-review/`); keep them in sync with
+  `tools/sync-plugin.sh`.
 
 ## Running on non-Claude agents
 This skill follows the open Agent Skills format and works on any compatible agent

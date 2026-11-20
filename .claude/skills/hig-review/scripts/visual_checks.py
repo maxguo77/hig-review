@@ -24,10 +24,12 @@ helpers provide the things eyeballing can't do reliably:
            background — so thin/anti-aliased text doesn't need pixel-perfect aim.
 
   contrast <c1> <c2> [--large]
-        -> WCAG contrast ratio + AA/AAA pass/fail. HIG gives no fixed value, so
-           WCAG AA (4.5:1 body / 3:1 large) is the pragmatic stand-in
-           (see general-review-mode.md). Prefer feeding it colors from `sample` or
-           from values the design states; mark eyeballed inputs as estimates.
+        -> contrast ratio + pass/fail. The HIG Accessibility page adopts WCAG AA
+           minimums (what Accessibility Inspector checks): 4.5:1 for text up to
+           17 pt, 3:1 for text 18 pt+ or bold at any size (WCAG's own "large" is
+           18 pt or 14 pt bold), so one check serves Apple platforms and the web. Prefer
+           feeding it colors from `sample` or from values the design states;
+           mark eyeballed inputs as estimates.
 
 Colors accept "#RGB", "#RRGGBB", or "r,g,b". Stdlib only.
 """
@@ -41,25 +43,43 @@ import sys
 import zlib
 
 # Known device screenshot sizes (portrait px) -> (label, scale, pt_w, pt_h).
-# Matched in either orientation with a small tolerance.
+# Matched in either orientation with a small tolerance. Pixel sizes follow
+# App Store Connect's "Screenshot specifications" (checked 2026-11); the HIG's
+# Layout page no longer lists per-device dimensions (moved to Apple Design
+# Resources in Sept 2026).
 KNOWN_DEVICES = {
-    (1170, 2532): ("iPhone 12/13/14", 3, 390, 844),
-    (1179, 2556): ("iPhone 14/15/16 Pro", 3, 393, 852),
-    (1206, 2622): ("iPhone 16 Pro", 3, 402, 874),
-    (1290, 2796): ("iPhone 14/15 Pro Max / Plus", 3, 430, 932),
-    (1284, 2778): ("iPhone 12/13 Pro Max", 3, 428, 926),
+    # iPhone Duo (two displays; @3x inferred — both sizes divide evenly by 3)
+    (1398, 2034): ("iPhone Duo (outer display)", 3, 466, 678),
+    (2007, 2853): ("iPhone Duo (inner display)", 3, 669, 951),
+    # iPhone with Dynamic Island
+    (1320, 2868): ("iPhone 16/17/18 Pro Max", 3, 440, 956),
+    (1260, 2736): ("iPhone Air", 3, 420, 912),
+    (1290, 2796): ("iPhone 14/15 Pro Max / 15/16 Plus", 3, 430, 932),
+    (1206, 2622): ("iPhone 16 Pro / 17 / 17 Pro / 18 Pro", 3, 402, 874),
+    (1179, 2556): ("iPhone 14 Pro / 15 / 15 Pro / 16", 3, 393, 852),
+    # iPhone with Face ID
+    (1170, 2532): ("iPhone 12/13/14 / 16e / 17e", 3, 390, 844),
+    (1284, 2778): ("iPhone 12/13 Pro Max / 14 Plus", 3, 428, 926),
+    (1242, 2688): ("iPhone XS Max / 11 Pro Max", 3, 414, 896),
     (1125, 2436): ("iPhone X/XS/11 Pro", 3, 375, 812),
     (1080, 2340): ("iPhone 12/13 mini", 3, 360, 780),
+    # iPhone with Home button
     (750, 1334): ("iPhone 6/7/8/SE2/SE3", 2, 375, 667),
     (1242, 2208): ("iPhone 6+/7+/8+", 3, 414, 736),
+    # iPad
+    (2064, 2752): ("iPad Pro 13\" (M4/M5) / iPad Air 13\"", 2, 1032, 1376),
     (2048, 2732): ("iPad Pro 12.9\"", 2, 1024, 1366),
+    (1668, 2420): ("iPad Pro 11\" (M4/M5)", 2, 834, 1210),
     (1668, 2388): ("iPad Pro 11\"", 2, 834, 1194),
-    (1640, 2360): ("iPad Air 10.9\"", 2, 820, 1180),
+    (1640, 2360): ("iPad Air 11\" / iPad (A16, 10th gen)", 2, 820, 1180),
     (1620, 2160): ("iPad 10.2\"", 2, 810, 1080),
     (1488, 2266): ("iPad mini 8.3\"", 2, 744, 1133),
-    (396, 484): ("Apple Watch 45mm", 2, 198, 242),
-    (410, 502): ("Apple Watch 49mm Ultra", 2, 205, 251),
-    (368, 448): ("Apple Watch 44mm", 2, 184, 224),
+    # Apple Watch
+    (422, 514): ("Apple Watch Ultra 3/4", 2, 211, 257),
+    (410, 502): ("Apple Watch Ultra / Ultra 2", 2, 205, 251),
+    (416, 496): ("Apple Watch Series 10/11/12 (46mm)", 2, 208, 248),
+    (396, 484): ("Apple Watch Series 7/8/9 (45mm)", 2, 198, 242),
+    (368, 448): ("Apple Watch Series 4-6 / SE (44mm)", 2, 184, 224),
 }
 
 TOL = 8  # px tolerance when matching known sizes
@@ -138,11 +158,18 @@ def match_device(w: int, h: int):
     """Return device info ONLY if size matches a known full-device screenshot."""
     pw, ph = min(w, h), max(w, h)
     orientation = "portrait" if h >= w else "landscape"
-    for (kw, kh), (label, scale, ptw, pth) in KNOWN_DEVICES.items():
-        if abs(pw - kw) <= TOL and abs(ph - kh) <= TOL:
-            pt = [ptw, pth] if orientation == "portrait" else [pth, ptw]
-            return {"matched": True, "device": label, "scale": scale,
-                    "pt_size": pt, "orientation": orientation}
+    # Pick the CLOSEST known size within tolerance (several devices sit within
+    # a few px of each other, e.g. Watch 46mm 416×496 vs Ultra 410×502).
+    best = None
+    for (kw, kh), info in KNOWN_DEVICES.items():
+        dist = abs(pw - kw) + abs(ph - kh)
+        if abs(pw - kw) <= TOL and abs(ph - kh) <= TOL and (best is None or dist < best[0]):
+            best = (dist, info)
+    if best:
+        label, scale, ptw, pth = best[1]
+        pt = [ptw, pth] if orientation == "portrait" else [pth, ptw]
+        return {"matched": True, "device": label, "scale": scale,
+                "pt_size": pt, "orientation": orientation}
     return {"matched": False, "orientation": orientation}
 
 
@@ -163,17 +190,30 @@ def capture_hint(w: int, h: int) -> str:
 def safe_area_note(matched: dict, platform: str | None) -> str:
     if matched.get("matched"):
         dev = matched["device"]
+        if "Duo" in dev:
+            return ("iPhone Duo — toolbars, tab bars and the status bar sit on the SIDE "
+                    "(vertical controls) on the outer display and on the inner display in "
+                    "landscape; inner display in portrait keeps horizontal bars. Keep content "
+                    "clear of reserved regions: the outer corner camera (always present), "
+                    "the inner camera (when active) and the fold (center, when partially "
+                    "open). See designing-for-iphone-duo.")
         if "iPhone" in dev:
             return ("Top safe area (notch/Dynamic Island) + bottom home indicator "
                     "— keep content/controls clear of both.")
         if "iPad" in dev:
-            return "Respect top status bar + multitasking; generous layout margins."
+            return ("Respect top status bar, window controls (resizable windows) + "
+                    "multitasking; tab bar sits near the top; generous layout margins.")
         if "Watch" in dev:
             return "Tiny canvas — large tap targets, minimal chrome, top time area."
     p = (platform or "").lower()
     if p == "macos":
         return ("macOS window — no device safe areas; check title bar/toolbar, "
-                "resizable layout, and standard window controls instead.")
+                "resizable layout, standard window controls, nothing critical at the "
+                "window bottom, and content clear of the camera housing. On a Mac with "
+                "a touch display, controls keep their size but need larger tap targets.")
+    if p in ("iphone-duo", "duo"):
+        return ("iPhone Duo — controls on the side (vertical axis); keep content clear of "
+                "the corner camera and the fold; verify which display/pose this is.")
     if p in ("web", "数据大屏", "dashboard"):
         return "Web/dashboard — no Apple safe areas; judge by viewport & responsive layout."
     if p:
@@ -478,7 +518,8 @@ def cmd_contrast(args) -> int:
         "color1": list(c1), "color2": list(c2), "ratio": round(ratio, 2),
         "AA": {"normal_text": aa_normal, "large_text": aa_large},
         "AAA": {"normal_text": aaa_normal, "large_text": aaa_large},
-        "note": "WCAG AA stand-in for HIG contrast intent (no fixed HIG value).",
+        "note": ("HIG Accessibility minimums: 4.5:1 text <=17pt, 3:1 text >=18pt or "
+                 "bold (= WCAG AA 1.4.3; WCAG large = 18pt / 14pt bold)."),
     }
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=2))
@@ -520,7 +561,7 @@ def main() -> int:
     c = sub.add_parser("contrast", help="WCAG contrast ratio between two colors")
     c.add_argument("color1")
     c.add_argument("color2")
-    c.add_argument("--large", action="store_true", help="evaluate as large text (≥18pt/14pt bold)")
+    c.add_argument("--large", action="store_true", help="evaluate as large text (HIG: ≥18pt or bold; WCAG: ≥18pt / 14pt bold)")
     add_json(c)
 
     args = ap.parse_args()

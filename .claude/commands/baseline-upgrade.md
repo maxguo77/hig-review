@@ -12,6 +12,8 @@ description: "升级本地审查基线：重新抓取并 diff，报告 +新增/~
 2. 用 **Bash 工具**直接运行该脚本（不要预执行；这是一次联网爬取）。本仓库即：
    `python3 .claude/skills/hig-review/scripts/build_rules.py --upgrade`
    （插件环境换成 `python3 ${CLAUDE_PLUGIN_ROOT}/skills/hig-review/scripts/build_rules.py --upgrade`）
-3. 汇总脚本输出：**+新增 / ~变更 / -删除** 的页面，以及更新后的 `VERSION`。若与上一版无变化，
-   明确说明「基线已是最新」。若本地基线还不存在（`rules/index.json` 缺失），提示先运行
+3. 汇总脚本输出：**+新增 / ~变更 / -删除** 的页面、脚本列出的「Apple 更新日志」条目（按日期，
+   这才是真实的规范内容变化），以及更新后的 `VERSION`。若脚本提示解析器已升级（NOTE: the
+   parser changed…），说明本次多数「~变更」只是格式变化（新增了表格与平台分栏内容），以更新日志
+   为准。若与上一版无变化，明确说明「基线已是最新」。若本地基线还不存在（`rules/index.json` 缺失），提示先运行
    `baseline-init` 命令做首次构建。失败时原样转述错误。

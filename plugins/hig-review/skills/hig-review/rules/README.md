@@ -4,7 +4,7 @@ This folder holds the offline rule corpus, **built locally**. It isn't shipped i
 the repo: the text is derived from Apple's Human Interface Guidelines
 (© Apple Inc.) and isn't redistributed here.
 
-Build it once from the skill directory (needs network, ~15–20 min):
+Build it once from the skill directory (needs network, ~5 min):
 
     python3 scripts/build_rules.py
 

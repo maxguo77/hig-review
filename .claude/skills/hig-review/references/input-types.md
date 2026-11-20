@@ -12,14 +12,27 @@ Languages: Swift / SwiftUI, UIKit, AppKit, Objective-C, and web
 - Map the symbol to its rule set (confirm the candidate against `rules/index.json`).
 - High-signal checks:
   - **Buttons**: press/disabled states, label clarity, sufficient hit region.
-  - **Targets**: `frame(width:height:)`, padding, gesture areas ≥ 44×44 pt
-    (60×60 in visionOS).
+  - **Targets**: `frame(width:height:)`, padding, gesture areas vs. the
+    platform's control sizes in `platforms.md` (iOS 44×44 pt default / 28 min,
+    macOS 28/20, tvOS 66/56, visionOS 60/28, watchOS 44/28).
   - **Color**: avoid hard-coded hex / `UIColor(red:…)`; prefer semantic/system
     colors; light+dark variants.
   - **Typography**: Dynamic Type (`.font(.body)` vs fixed sizes), legible sizes.
   - **Accessibility**: `accessibilityLabel`/`Hint`, `aria-*`, VoiceOver support.
   - **Navigation/modality**: correct use of stacks, sheets, alerts, popovers.
   - **Destructive actions**: confirmation, `.destructive` role.
+  - **Liquid Glass**: custom solid/semi-opaque bar backgrounds
+    (`toolbarBackground`, `barTintColor`, opaque `standardAppearance`) fight the
+    system scroll edge effect — prefer the system appearance; glass effects
+    belong on controls, not content; bright tinted labels over colorful content.
+  - **Adaptivity (iPhone Duo, resizable iPad windows, iPhone Mirroring)**: layout
+    keyed to `userInterfaceIdiom`, `UIScreen.main.bounds` or fixed widths instead
+    of size classes / safe areas; custom toolbars or tab bars that won't move to
+    the side; toolbar items missing a title or a symbol; a custom ellipsis menu
+    beside the system overflow menu; content not using `ReservedRegion` where
+    the system doesn't move it.
+  - **macOS touch**: hover-only controls (`onHover`, `NSTrackingArea`) with no
+    tap-to-reveal or context-menu path; features reachable only by touch.
 - Report locations as `path:line` (or `:line-line`).
 
 ## 2. UI images (screenshots / mockups)

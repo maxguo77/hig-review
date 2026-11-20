@@ -6,7 +6,8 @@ everything the **user sees** (gate questions + report) in plain language.
 ## Step 0 — Ask first (mandatory)
 Ask with the AskUserQuestion tool, in user-facing wording (skip a question only
 if the user already answered it, or infer the obvious and state it):
-1. **Which product is this for?** — iPhone app / iPad app / Mac app /
+1. **Which product is this for?** — iPhone app (incl. iPhone Duo?) / iPad app /
+   Mac app (incl. Macs with a touch display) /
    Apple Watch · Apple TV · Vision Pro app / web page · data dashboard (数据大屏).
    Multiple allowed (e.g. a universal iPhone + iPad app). Web/dashboard runs in
    **general review mode** (`references/general-review-mode.md`).
@@ -16,7 +17,7 @@ if the user already answered it, or infer the obvious and state it):
    baseline) or "联网获取最新规范(稍慢)" (fetch the latest live). If they pick 本地
    but `rules/index.json` is missing, show the first-run sync notice before
    building:
-   > 首次使用「离线审查」需先把 Apple HIG 同步到本地基线库（联网抓取一次，约 15–20
+   > 首次使用「离线审查」需先把 Apple HIG 同步到本地基线库（联网抓取一次，约 5
    > 分钟，视网络情况）；完成后审查全程离线、更快。现在开始同步，还是改用「联网
    > 获取最新规范」？
 
@@ -33,12 +34,17 @@ and how findings read.
 
 ## Step 2 — Select rule sets
 - **If `rules/index.json` is missing**, the baseline isn't built yet — show the
-  first-run sync notice (Step 0 #3, ~15–20 min estimate), then run
+  first-run sync notice (Step 0 #3, ~5 min estimate), then run
   `python3 scripts/build_rules.py` once (needs network), or use live mode.
 - Load `rules/index.json`. Keep rule sets whose `platforms` contains a chosen
-  platform OR `"all"`. (See `references/platforms.md` for the matrix and the
-  always-relevant foundations: accessibility, color, typography, layout,
-  materials, app-icons, privacy.)
+  platform OR `"all"`. (See `references/platforms.md` for the matrix, the
+  per-platform size/contrast minimums, and the always-relevant foundations:
+  design principles, accessibility, color, typography, layout, materials,
+  app-icons, privacy.)
+- Check the baseline's age: if `VERSION` is older than ~3 months, or the user
+  targets something newer than the baseline (e.g. iPhone Duo, Mac touch), say
+  so and suggest `/hig-review:baseline-upgrade` or live mode. Each index entry
+  carries `hig_updated` (Apple's latest change-log date for that page).
 - From `component_hits`, gather the candidate rule sets; open the corresponding
   `rules/pages/<slug>.md`. Always also load the foundations above.
 - **Latest live rules**: first list every page you expect to cite (e.g. for a
@@ -46,7 +52,8 @@ and how findings read.
   `typography`) and `hig_fetch.py` them **all up front** — don't start writing
   findings, then cite a page you never fetched. For each in-scope component slug, run
   `python3 scripts/hig_fetch.py <slug>` and **read the full fetched body** (not
-  just the title lines) — its bullets are what you cite. Only cite a page you actually fetched this run; for any guideline you didn't fetch, fetch it or label `依据` as "本地内置基线". If the fetched text
+  just the title lines) — its bullets are what you cite. Add `--lang zh-CN`
+  when you want to quote Apple's official Chinese wording in the report. Only cite a page you actually fetched this run; for any guideline you didn't fetch, fetch it or label `依据` as "本地内置基线". If the fetched text
   matches the bundled baseline, note "与内置规范一致" rather than implying new
   info. For **web · 数据大屏** the latest Apple HIG rarely changes the general
   principles; the bundled baseline is usually enough.
@@ -56,10 +63,14 @@ and how findings read.
 ## Step 3 — Evaluate (the actual review)
 For each artifact:
 - **Code** — inspect each `component_hit` and its context. Common checks: hit
-  region ≥ 44×44 pt (60×60 in visionOS); custom buttons have a press state;
+  region vs. the platform's control sizes (`platforms.md`: iOS 44 pt default /
+  28 pt minimum, macOS 28/20, tvOS 66/56, visionOS 60/28, watchOS 44/28);
+  custom buttons have a press state;
   semantic/system colors not hard-coded; Dynamic Type / accessibility labels
   present; navigation depth and a back path; destructive actions confirmed;
-  modality used appropriately.
+  modality used appropriately; layout driven by size classes (not device
+  idiom) so it adapts to iPhone Duo / resizable windows; system bar
+  appearance kept (Liquid Glass + scroll edge effect).
 - **UI images** — read the image; identify components & layout; check spacing,
   contrast (real pixels via `visual_checks.py sample`), alignment, target sizes
   (needs a known scale), safe-area handling, consistency.

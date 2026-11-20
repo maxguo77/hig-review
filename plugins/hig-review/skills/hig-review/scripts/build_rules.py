@@ -9,10 +9,16 @@ page into ``rules/pages/<slug>.md`` with structured frontmatter. Also writes a
 ``rules/manifest.json`` (version, build date, per-page content hash) and a
 ``rules/index.json`` (rule_set_id -> {title, url, platforms, file, category}).
 
+Each page also records Apple's official Simplified Chinese title/link
+(``title_zh`` / ``url_zh``, from the zh-CN HIG) so Chinese reports can cite the
+guideline by its official name, and the date of the page's newest change-log
+entry (``hig_updated``).
+
 Usage:
     python build_rules.py            # initialize / regenerate the corpus
     python build_rules.py --upgrade  # re-crawl, diff vs manifest, report changes
     python build_rules.py --limit 20 # cap pages (useful for a quick smoke test)
+    python build_rules.py --no-zh    # skip the zh-CN title/link lookup
 
 Stdlib only — see hig_lib.py for the rationale.
 """
@@ -75,14 +81,24 @@ def render_markdown(page: dict, rid: str, fetched: str, chash: str) -> str:
         "---",
         f"rule_set_id: {rid}",
         f"title: {json.dumps(page['title'], ensure_ascii=False)}",
-        f"source_url: {page['url']}",
+    ]
+    if page.get("title_zh"):
+        fm.append(f"title_zh: {json.dumps(page['title_zh'], ensure_ascii=False)}")
+    fm.append(f"source_url: {page['url']}")
+    if page.get("url_zh"):
+        fm.append(f"source_url_zh: {page['url_zh']}")
+    fm += [
         f"platforms: {json.dumps(page['platforms'], ensure_ascii=False)}",
         f"category: {category_of(page['path'])}",
+    ]
+    if page.get("hig_updated"):
+        fm.append(f"hig_updated: {page['hig_updated']}")
+    fm += [
         f"hig_fetched: {fetched}",
         f"content_hash: {chash}",
         "---",
         "",
-        f"# {page['title']}",
+        f"# {page['title']}" + (f" ({page['title_zh']})" if page.get("title_zh") else ""),
         "",
     ]
     body = ["\n".join(fm)]
@@ -114,7 +130,18 @@ def render_markdown(page: dict, rid: str, fetched: str, chash: str) -> str:
     return "\n".join(body).rstrip() + "\n"
 
 
-def crawl(limit: int | None = None) -> dict:
+def add_zh(page: dict) -> None:
+    """Attach the official zh-CN title/link. Missing translations are fine."""
+    data = hig.fetch_page_json(page["path"], lang="zh-CN", retries=1)
+    if not data:
+        return
+    title = (data.get("metadata") or {}).get("title")
+    if title and title != page["title"]:
+        page["title_zh"] = title
+        page["url_zh"] = hig.web_url(page["path"], "zh-CN")
+
+
+def crawl(limit: int | None = None, zh: bool = True) -> dict:
     """BFS the HIG reference graph. Returns {path: page_dict}."""
     pages: dict = {}
     seen = set()
@@ -129,9 +156,16 @@ def crawl(limit: int | None = None) -> dict:
             print(f"  ! fetch failed: {hig.web_url(path)}", file=sys.stderr)
             continue
         page = hig.extract_page(data, path)
+        change = hig.latest_change(page)
+        if change:
+            page["hig_updated"] = change["date"]
+            page["hig_update_note"] = change["change"]
+        if zh:
+            add_zh(page)
         pages[path] = page
         fetched_count += 1
-        print(f"  [{fetched_count}] {page['title']}  ({path or 'root'})")
+        zh_note = f" / {page['title_zh']}" if page.get("title_zh") else ""
+        print(f"  [{fetched_count}] {page['title']}{zh_note}  ({path or 'root'})")
 
         for child in page["child_paths"]:
             if child not in seen:
@@ -191,12 +225,19 @@ def reindex_from_files() -> int:
                                 "title": fm.get("title", path),
                                 "content_hash": fm.get("content_hash", ""),
                                 "file": rel_file}
-        index[fm.get("rule_set_id", rule_set_id(path))] = {
+        entry = {
             "title": fm.get("title", path), "url": fm.get("source_url", ""),
             "platforms": fm.get("platforms", ["all"]), "file": rel_file,
             "category": fm.get("category", category_of(path)), "path": path}
+        for src, dst in (("title_zh", "title_zh"), ("source_url_zh", "url_zh"),
+                         ("hig_updated", "hig_updated")):
+            if fm.get(src):
+                entry[dst] = fm[src]
+        index[fm.get("rule_set_id", rule_set_id(path))] = entry
         latest = max(latest, str(fm.get("hig_fetched", "")) or latest)
+    prev = load_manifest()
     manifest = {"corpus_version": latest, "built": latest, "source": hig.WEB_BASE,
+                "parser_version": prev.get("parser_version", 1),
                 "page_count": len(files), "pages": manifest_pages}
     MANIFEST.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
     INDEX.write_text(json.dumps(index, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -217,6 +258,8 @@ def main() -> int:
                     help="rebuild manifest/index from existing rule files (no network)")
     ap.add_argument("--limit", type=int, default=None,
                     help="cap number of pages (smoke test only; does NOT update manifest/index)")
+    ap.add_argument("--no-zh", action="store_true",
+                    help="skip fetching Apple's official zh-CN titles/links (halves requests)")
     args = ap.parse_args()
 
     if args.reindex:
@@ -231,7 +274,7 @@ def main() -> int:
     prev_pages = prev.get("pages", {}) if isinstance(prev, dict) else {}
 
     print("Crawling Apple Human Interface Guidelines ...")
-    pages = crawl(limit=args.limit)
+    pages = crawl(limit=args.limit, zh=not args.no_zh)
     if not pages:
         print("No pages fetched (network issue?). Aborting.", file=sys.stderr)
         return 1
@@ -257,6 +300,9 @@ def main() -> int:
         index[rid] = {"title": page["title"], "url": page["url"],
                       "platforms": page["platforms"], "file": rel_file,
                       "category": category_of(path), "path": path}
+        for key in ("title_zh", "url_zh", "hig_updated"):
+            if page.get(key):
+                index[rid][key] = page[key]
 
         old = prev_pages.get(path)
         if old is None:
@@ -273,6 +319,7 @@ def main() -> int:
         "corpus_version": version,
         "built": fetched,
         "source": hig.WEB_BASE,
+        "parser_version": hig.PARSER_VERSION,
         "page_count": len(pages),
         "pages": manifest_pages,
     }
@@ -304,6 +351,20 @@ def main() -> int:
             print(f"   - {p or 'root'}")
         if not (added or changed or removed):
             print("No differences vs previous manifest.")
+        prev_parser = prev.get("parser_version", 1) if isinstance(prev, dict) else 1
+        if changed and prev_parser != hig.PARSER_VERSION:
+            print(f"NOTE: the parser changed since the previous build (v{prev_parser} -> "
+                  f"v{hig.PARSER_VERSION}: tables and platform tabs are now captured), so "
+                  "most '~ changed' entries are format-only. For real HIG content changes, "
+                  "use the dated list below.")
+        recent = sorted(((p["hig_updated"], path, p.get("hig_update_note", ""))
+                         for path, p in pages.items()
+                         if p.get("hig_updated") and p["hig_updated"] > prev.get("built", "")),
+                        reverse=True)
+        if recent:
+            print(f"Apple change-log entries since the previous build ({prev.get('built', '?')}):")
+            for date, path, note in recent:
+                print(f"   {date}  {path or 'root'} — {note}")
     return 0
 
 

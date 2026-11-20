@@ -16,32 +16,53 @@ Don't flatten everything to 提示 (Info). Split by what actually governs the su
       components & graphics.
     - Target size: WCAG 2.5.8 (AA) **24×24 CSS px**; 2.5.5 (AAA) **44×44 CSS px**
       (≈ Apple's 44pt). A size verdict needs a **known scale** — if it's unknown,
-      mark the finding 待核实 (verify), not a violation (see principle 6).
-- **Design-principle findings** — clarity, hierarchy, consistency,
-  affordance/feedback, information density. These are advisory for web/dashboard
-  → 提示 (Info); cite the related Apple guideline by name as a reference.
+      mark the finding 待核实 (verify), not a violation (see "Target sizing").
+- **Design-principle findings** — purpose, hierarchy, consistency,
+  feedback, information density, recoverability. These are advisory for
+  web/dashboard → 提示 (Info); cite the related Apple design principle (or
+  guideline page) by name as a reference.
 
-## Core principles (from the HIG foundations)
-1. **Clarity** — legible at every size; precise icons; text/background meet
-   contrast minimums (WCAG 1.4.3). Reference: Color, Accessibility, Typography.
-2. **Deference** — UI defers to content; restrained chrome; meaningful space.
-   Reference: design principles, Materials.
-3. **Depth & hierarchy** — clear visual hierarchy, layering, focus order.
-   Reference: Layout, Typography.
-4. **Consistency** — consistent components, terminology, color meaning, and
-   interaction patterns. Reference: Color, Menus.
-5. **Feedback & affordance** — interactive elements look interactive and respond
-   (hover/press/focus/disabled); progress & status are communicated. Reference:
-   Buttons, Progress indicators.
-6. **Target sizing** — comfortably large targets. Web standard: WCAG 2.5.8 (AA)
-   24×24 CSS px, 2.5.5 (AAA) 44×44 CSS px; touch/大屏 at distance want the larger
-   end. **Caveat:** judge only with a known scale — a screenshot's pixels are
-   device px, not CSS px. If `visual_checks.py dims` can't establish scale and
-   the user hasn't said, report size concerns as 待核实 (verify) and ask for the
-   viewport/scale. Reference: Buttons, Gestures.
-7. **Accessibility** — keyboard navigation, visible focus, semantic markup
-   (`aria-*`, landmarks), color not the sole channel, respects reduced-motion.
-   Reference: Accessibility.
+## Core principles (Apple's Design principles, reintroduced June 2026)
+The HIG's `design-principles` page now lists eight principles (the older
+"Clarity / Deference / Depth" trio is retired — don't cite it). Use them as the
+quality lens, mapped to concrete web/dashboard checks. Cite by name, e.g.
+"Apple 设计原则 — 简洁 (Simplicity)", and pair with WCAG wherever a web
+standard exists.
+
+1. **Purpose (目标感)** — the page's main job is obvious; the key task or KPI is
+   prominent, not buried among secondary widgets.
+2. **Agency (能动性)** — stay out of the way; guided flows can be skipped or
+   escaped; mistakes are recoverable (undo, confirm destructive actions, keep
+   input on error).
+3. **Responsibility (责任感)** — be transparent about what is collected and why;
+   ask for permissions in context with a clear reason.
+4. **Familiarity (熟悉感)** — consistent components, terminology, color meaning
+   and interaction patterns; **clear feedback**: controls look interactive and
+   respond (hover/press/focus/disabled), and status/progress is communicated.
+   Reference: Buttons, Progress indicators.
+5. **Flexibility (灵活)** — design for everyone: accessibility from the start,
+   multiple input methods (keyboard, pointer, touch, voice), responsive layouts
+   that keep context across sizes. Web standards: keyboard operable (WCAG
+   2.1.1), visible focus (2.4.7 / 2.4.11), semantic labels (`aria-*`,
+   landmarks; 4.1.2), not color alone (1.4.1), reduced motion
+   (`prefers-reduced-motion`; 2.3.3).
+6. **Simplicity (简洁)** — only what's necessary, concise wording, clear
+   hierarchy (type scale, grouping, alignment). Legible text with contrast
+   ≥ 4.5:1 body / 3:1 large (WCAG 1.4.3 — the HIG Accessibility page adopts
+   these same WCAG AA values); non-text UI ≥ 3:1 (1.4.11). Reference: Typography,
+   Color, Layout.
+7. **Craft (匠心)** — precise alignment and spacing, polished states (empty,
+   loading, error), smooth non-janky motion.
+8. **Delight (愉悦感)** — personality that serves the task; never decoration
+   that gets in the way of it.
+
+**Target sizing** (part of Flexibility): comfortably large targets. Web
+standard: WCAG 2.5.8 (AA) 24×24 CSS px, 2.5.5 (AAA) 44×44 CSS px; touch and
+dashboards viewed at a distance want the larger end. **Caveat:** judge only
+with a known scale — a screenshot's pixels are device px, not CSS px. If
+`visual_checks.py dims` can't establish the scale and the user hasn't said,
+report size concerns as 待核实 (verify) and ask for the viewport/scale.
+Reference: Buttons, Gestures.
 
 ## Data dashboard (数据大屏) specifics
 - **Legibility at distance** — font sizes scaled to viewing distance; avoid thin
@@ -58,8 +79,9 @@ Don't flatten everything to 提示 (Info). Split by what actually governs the su
 - Run the normal workflow, but load this file instead of the platform pages.
 - Web-standard line: `依据 / Based on: WCAG 1.4.3 (AA) — 对比度 4.5:1` (real
   severity); optionally add "对齐 Apple 设计原则:Color".
-- Design-principle line: `依据 / Based on: Apple 设计原则 — 反馈与可供性
-  (Buttons)` (提示 / Info).
+- Design-principle line: `依据 / Based on: Apple 设计原则 — 熟悉感 (Familiarity):
+  提供清晰的反馈` (提示 / Info). Link:
+  https://developer.apple.com/cn/design/human-interface-guidelines/design-principles
 - The bundled baseline is usually enough here (Apple's general principles are
   stable); fetch the latest live only if the user wants it, and read the body.
 - Ground contrast in real pixels (`visual_checks.py sample`); never eyeball a

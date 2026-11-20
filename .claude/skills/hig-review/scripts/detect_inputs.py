@@ -47,7 +47,7 @@ CONFIG_EXTS = {".storyboard", ".xib", ".strings", ".xcstrings", ".plist"}
 # Patterns are matched case-sensitively as word-ish tokens.
 COMPONENT_MAP = [
     (r"\bButton\b|UIButton|NSButton|<button|role=[\"']button", ["HIG-BUTTONS"]),
-    (r"TabView|UITabBar|TabItem|role=[\"']tab", ["HIG-TAB-BARS"]),
+    (r"TabView|UITabBar|TabItem|\.tabItem\b|\bTab\(|role=[\"']tab", ["HIG-TAB-BARS"]),
     (r"NavigationStack|NavigationView|UINavigationController|UINavigationBar",
      ["HIG-NAVIGATION-AND-SEARCH"]),
     (r"NavigationSplitView|NSSplitView|UISplitViewController", ["HIG-SPLIT-VIEWS"]),
@@ -76,8 +76,30 @@ COMPONENT_MAP = [
      ["HIG-ACCESSIBILITY"]),
     (r"\.onTapGesture|UITapGestureRecognizer|hitTest|frame\(width:|min(Width|Height)",
      ["HIG-GESTURES"]),
-    (r"LiquidGlass|\.glassEffect|Liquid Glass|materialEffect|\.ultraThinMaterial",
+    (r"LiquidGlass|\.glassEffect|GlassEffectContainer|UIGlassEffect|\.buttonStyle\(\.glass"
+     r"|Liquid Glass|materialEffect|\.ultraThinMaterial",
      ["HIG-MATERIALS"]),
+    # Scroll edge effects / background extension replace solid bar backgrounds
+    # under Liquid Glass (Layout, Scroll views).
+    (r"scrollEdgeEffect|backgroundExtensionEffect|UIBackgroundExtensionView"
+     r"|toolbarBackground\(|\.barTintColor|standardAppearance",
+     ["HIG-SCROLL-VIEWS", "HIG-LAYOUT"]),
+    # Tab bar minimize / search tab (iOS 26+)
+    (r"tabBarMinimizeBehavior|MinimizeBehavior|Tab\(role:\s*\.search|tabViewBottomAccessory",
+     ["HIG-TAB-BARS", "HIG-SEARCH-FIELDS"]),
+    # iPhone Duo: arrangement views, reserved regions, vertical bar priorities
+    (r"ArrangementView|UIArrangementViewController|ReservedRegion"
+     r"|ToolbarItemVisibilityPriority|UIBarButtonItemVisibilityPriority"
+     r"|ToolbarVerticalCompressionBehavior|UIVerticalBarCompressionBehavior",
+     ["HIG-DESIGNING-FOR-IPHONE-DUO", "HIG-TOOLBARS"]),
+    # Layout keyed to device/idiom or fixed screen width — breaks on iPhone Duo,
+    # resizable iPad windows and iPhone Mirroring (Layout: use size classes).
+    (r"userInterfaceIdiom|UIScreen\.main\.bounds|UIScreen\.main|horizontalSizeClass"
+     r"|verticalSizeClass|UITraitCollection",
+     ["HIG-LAYOUT", "HIG-DESIGNING-FOR-IPHONE-DUO"]),
+    # macOS hover-only controls need a touch path on Macs with a touch display
+    (r"\.onHover\(|NSTrackingArea|mouseEntered|\.help\(",
+     ["HIG-POINTING-DEVICES", "HIG-GESTURES"]),
     (r"@AppStorage|UserDefaults|onboarding|Onboarding", ["HIG-ONBOARDING"]),
     (r"requestAuthorization|AVCapture|CLLocationManager|requestWhenInUse",
      ["HIG-PRIVACY"]),
@@ -110,15 +132,19 @@ def scan_component_hits(path: Path, rel: str) -> list[dict]:
         return hits
     lines = text.splitlines()
     for i, line in enumerate(lines, start=1):
+        # One hit per line, but keep the rule sets of EVERY matching pattern
+        # (e.g. `.tabItem { Image(systemName:) }` is both Tab bars and SF Symbols).
+        matched: list = []
         for pattern, rule_sets in COMPONENT_MAP:
             if re.search(pattern, line):
-                hits.append({
-                    "file": rel,
-                    "line": i,
-                    "match": line.strip()[:160],
-                    "rule_sets": rule_sets,
-                })
-                break  # one hit per line is enough to flag it for review
+                matched += [r for r in rule_sets if r not in matched]
+        if matched:
+            hits.append({
+                "file": rel,
+                "line": i,
+                "match": line.strip()[:160],
+                "rule_sets": matched,
+            })
     return hits
 
 

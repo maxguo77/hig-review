@@ -5,8 +5,9 @@ language — no internal jargon. The title is always **「HIG 滚动基线审查
 
 ## Severity levels (bilingual labels)
 - **严重 (Blocker)** — breaks a core requirement or an accessibility/usability
-  floor (e.g. tap target too small, a custom button with no pressed state, text
-  below the contrast minimum). Shouldn't ship.
+  floor (e.g. a control below the platform's **minimum** size, a custom button
+  with no pressed state, text below the contrast minimum). Shouldn't ship.
+  Target-size grading per platform is in `platforms.md`.
 - **重要 (Major)** — a clear deviation that noticeably hurts the experience.
 - **建议 (Minor)** — a smaller deviation; fix when convenient.
 - **提示 (Info)** — advisory, or a general-principle note for web · 数据大屏
@@ -33,8 +34,18 @@ severity and cite WCAG. General design-principle notes are advisory → 提示
   建议 / Fix: <a concrete change>
   依据 / Based on: <guideline name> (<source link>)
 ```
-- `依据` shows the **guideline name + link** (e.g. "Apple 人机界面指南 — 按钮
-  (Buttons) https://developer.apple.com/design/human-interface-guidelines/buttons").
+- `依据` shows the **guideline name + link**. Apple publishes an official
+  Simplified Chinese HIG, so use its title and link: take `title_zh` and
+  `url_zh` from `rules/index.json` (or `title_zh` / `source_url_zh` in the page
+  frontmatter), and keep the English title in parentheses, e.g. "Apple
+  人机界面指南 — 按钮 (Buttons)
+  https://developer.apple.com/cn/design/human-interface-guidelines/buttons".
+  If there's no Chinese entry (older baseline or untranslated page), use the
+  English title and `url`, and **don't invent a Chinese title**. Common
+  official names: 按钮 Buttons · 标签页栏 Tab bars · 工具栏 Toolbars · 提醒 Alerts ·
+  表单 Sheets · 布局 Layout · 材质 Materials · 无障碍 Accessibility · 滚动视图
+  Scroll views · 深色模式 Dark mode · 手势 Gestures · 指针设备 Pointing devices ·
+  针对 iPhone Duo 设计 Designing for iPhone Duo · 设计原则 Design principles.
   You may add the internal id in parentheses for traceability — never as the
   headline.
 - For web · 数据大屏 web-standard findings, `依据` is the standard, e.g.
@@ -46,6 +57,8 @@ severity and cite WCAG. General design-principle notes are advisory → 提示
   normalized coords "≈ x:0.8, y:0.95").
 - **UX doc**: `spec.md:line` + a quoted sentence (PDF: `page N`).
 - **Design file**: `.pen` node name / Figma layer path.
+- **Device-specific**: name the device/display/pose when it matters, e.g.
+  "iPhone Duo 外屏 · 竖持" or "Mac 触控屏".
 - **Config**: `Info.plist → UISupportedInterfaceOrientations`.
 
 ## Example finding
@@ -55,7 +68,7 @@ severity and cite WCAG. General design-principle notes are advisory → 提示
   影响 / Impact: 用户会以为没点到、反复点击,觉得界面没反应。
   建议 / Fix: 改用带按下态的 ButtonStyle,或用 configuration.isPressed 驱动透明度/缩放。
   依据 / Based on: Apple 人机界面指南 — 按钮 (Buttons)
-                  https://developer.apple.com/design/human-interface-guidelines/buttons
+                  https://developer.apple.com/cn/design/human-interface-guidelines/buttons
 ```
 
 ## Keeping it honest
@@ -115,6 +128,7 @@ When asked, also emit:
       "fix": "...",
       "based_on": "Apple 人机界面指南 — 按钮 (Buttons)",
       "source_url": "https://developer.apple.com/design/human-interface-guidelines/buttons",
+      "source_url_zh": "https://developer.apple.com/cn/design/human-interface-guidelines/buttons",
       "guideline_id": "HIG-BUTTONS-002"
     }
   ]

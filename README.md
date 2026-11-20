@@ -14,9 +14,8 @@ dashboards.
 Every finding has five parts: **location · problem · impact · suggested fix · the
 guideline it's based on (with a link)** — so every change is justified.
 
-Shipped as a Plugin and an Agent Skill, callable directly in Claude Code, Codex,
-Kimi Code CLI, and other compatible agents; Claude Code and Codex plugin versions
-are provided.
+Shipped as an Agent Skill, callable directly in Claude Code, Codex, Kimi Code
+CLI, and other compatible agents, and as a Claude Code plugin.
 
 ## What it reviews
 - **Inputs:** source code · UI images / screenshots / mockups · UX docs, specs &
@@ -240,6 +239,3 @@ diff; the dated change-log list shows Apple's real content changes.
 Initial release: Agent Skill + Claude Code plugin, offline baseline and live
 mode, code / UI image / UX doc / Figma review, general mode for web pages and
 dashboards.
-
-## Roadmap
-- Pencil `.pen` design-source review; optional JSON report sidecar for CI.

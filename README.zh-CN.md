@@ -11,8 +11,8 @@ Apple Watch、Apple TV、Vision Pro，以及网页与数据大屏的通用场景
 每条审查结果包含五个要素：**位置 · 问题 · 影响 · 修改建议 · 依据指南（附链接）**，让
 每一处改动有理有据。
 
-以 Plugin 和 Agent Skill 形式发布，可在 Claude Code、Codex、Kimi Code CLI 等兼容 agent
-中直接调用；同时提供 Claude Code、codex plugin 版本。
+以 Agent Skill 形式发布，可在 Claude Code、Codex、Kimi Code CLI 等兼容 agent 中直接调用；
+同时提供 Claude Code 插件版本。
 
 ## 评审什么
 - **输入**：源代码 · UI 图 / 截图 / 原型 · UX 文档、规格与流程 · 设计文件（粘贴 **Figma**
@@ -206,6 +206,3 @@ Apple HIG 内容版权归 Apple Inc. 所有；本项目与 Apple 无隶属或背
 ### 0.1.0 — 2026-06-16
 首个版本：Agent Skill + Claude Code 插件，离线基线与联网模式，支持审查代码 / UI 图 / UX 文档 /
 Figma 设计稿，以及网页与数据大屏的通用模式。
-
-## 路线图
-- Pencil `.pen` 设计源审查；面向 CI 的可选 JSON 报告附件。
